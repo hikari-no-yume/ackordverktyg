@@ -128,6 +128,9 @@ footer, footer > a {
             while (negOffset > 0) {
                 negOffset -= 12;
             }
+            // Calculate which note of the inverted chord is the original root,
+            // so it can be underlined.
+            var rootIdx = (semitonesFromRoot.length - i) % semitonesFromRoot.length;
             for (var j = 0; j < inversion.length; j++) {
                 var origSemitone = semitonesFromRoot[(i + j) % semitonesFromRoot.length];
                 inversion[j] = origSemitone - posOffset;
@@ -137,6 +140,7 @@ footer, footer > a {
             }
             inversions[i] = {
                 semitones: inversion,
+                rootIdx: rootIdx,
                 posOffset: posOffset,
                 negOffset: negOffset,
             };
@@ -156,7 +160,17 @@ footer, footer > a {
             res += '<tr>';
             res += '<td>-' + (-inversion.negOffset) + '</td>';
             res += '<td>' + inversion.posOffset + '</td>';
-            res += '<td>' + inversion.semitones.join('-') + '</td>';
+            res += '<td>';
+            var semitones = inversion.semitones;
+            for (var j = 0; j < semitones.length; j++) {
+                res +=  (j == inversion.rootIdx)
+                    ?   ('<u>' + semitones[j] + '</u>')
+                    :   semitones[j];
+                if (j !== semitones.length - 1) {
+                    res += '-';
+                }
+            }
+            res += '</td>';
             res += '<td colspan=13>…</td>'; // TODO
             res += '</tr>';
         }
