@@ -1,0 +1,170 @@
+<!doctype html>
+<meta charset=utf-8>
+<title>ackordverktyg</title>
+<meta name=viewport content="width=device-width, initial-scale=1, maximum-scale=1">
+<style>
+* {
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+}
+body {
+    text-align: center;
+    font-family: sans-serif;
+}
+#integer-notation {
+    font-size: 36pt;
+    width: 300px;
+    margin: 36pt;
+}
+#results {
+    width: 320px;
+    min-height: 300px;
+    border: 2px dashed gray;
+    margin: 36pt auto;
+    margin-top: 0;
+    padding: 2pt;
+}
+#results > table {
+    width: 100%;
+}
+#results td:nth-child(1) {
+    text-align: right;
+    font-family: Consolas, monospace;
+    width: 3ch;
+}
+#results td:nth-child(2) {
+    text-align: left;
+    font-family: Consolas, monospace;
+    width: 2ch;
+}
+#results td:nth-child(3) {
+    text-align: left;
+    font-family: Consolas, monospace;
+    width: 8ch;
+}
+#results th:nth-child(n + 3), #results td:nth-child(n + 4) {
+    width: 7px;
+}
+#results th:nth-child(2n + 3) { background: white; color: black; }
+#results th:nth-child(2n + 4) { background: black; color: white; }
+#results th:nth-child(2n + 8) { background: white; color: black; }
+#results th:nth-child(2n + 9) { background: black; color: white; }
+#results th:nth-child(15)     { background: white; color: black; }
+
+footer {
+    margin: 36pt;
+    font-family: Georgia, sans-serif;
+}
+footer, footer > a {
+    color: gray;
+}
+</style>
+
+<input id=integer-notation type=text placeholder="0-3-7-10" autofocus>
+
+<div id=results>
+</div>
+
+<footer lang=en>
+<i lang=se>ackordverktyg</i> is a chords utility by <a href="https://hikari.noyu.me/">hikari_no_yume</a>.
+</footer>
+
+<script>
+(function () {
+    'use strict';
+
+    window.onload = function () {
+        var integerNotationIn = document.getElementById('integer-notation');
+        integerNotationIn.value = '';
+
+        var results = document.getElementById('results');
+
+        integerNotationIn.oninput = integerNotationIn.onchange = function () {
+            results.innerHTML = update(integerNotationIn.value);
+        };
+    };
+
+    function sortNumeric(array) {
+        return array.sort(function (a, b) {
+            return a - b;
+        });
+    }
+
+    function update(integerNotation) {
+        // Parse
+        var semitonesFromRoot = [];
+        var integerNotation = integerNotation.split('-');
+        for (var i = 0; i < integerNotation.length; i++) {
+            var raw = integerNotation[i].trim();
+            if (i === integerNotation.length - 1 && raw === '') {
+                continue;
+            }
+            var parsed = parseInt(integerNotation[i], 10);
+            if (parsed !== parsed || parsed.toString(10) !== raw) {
+                return 'parse failure';
+            }
+            semitonesFromRoot.push(parsed);
+        }
+
+        if (semitonesFromRoot.length === 0) {
+            return '';
+        }
+
+        sortNumeric(semitonesFromRoot);
+        if (semitonesFromRoot[0] !== 0) {
+            return 'idk how to handle the root not being present yet sorry :&lt;'; // TODO
+        }
+
+        var semitoneSpan = semitonesFromRoot[semitonesFromRoot.length - 1] + 1;
+        var octaveSpan = Math.ceil(semitoneSpan/12);
+
+        // Imagine every possible inversion
+        var inversions = new Array(semitonesFromRoot.length);
+nextInversion:
+        for (var i = 0; i < inversions.length; i++) {
+            var inversion = new Array(semitonesFromRoot.length);
+nextNote:
+            var posOffset = semitonesFromRoot[i];
+            var negOffset = posOffset;
+            while (negOffset > 0) {
+                negOffset -= 12;
+            }
+            for (var j = 0; j < inversion.length; j++) {
+                var origSemitone = semitonesFromRoot[(i + j) % semitonesFromRoot.length];
+                inversion[j] = origSemitone - posOffset;
+                if (i + j >= semitonesFromRoot.length) {
+                    inversion[j] += octaveSpan * 12;
+                }
+            }
+            inversions[i] = {
+                semitones: inversion,
+                posOffset: posOffset,
+                negOffset: negOffset,
+            };
+        }
+
+        var res = '';
+        res += '<table>';
+        res += '<thead><tr>';
+        res += '<th colspan=2>offset</th><th>chord</th>';
+        for (var i = 0; i <= 12; i++) {
+            res += '<th>•</th>';
+        }
+        res += '</tr></thead>';
+        res += '<tbody>';
+        for (var i = 0; i < inversions.length; i++) {
+            var inversion = inversions[i];
+            res += '<tr>';
+            res += '<td>-' + (-inversion.negOffset) + '</td>';
+            res += '<td>' + inversion.posOffset + '</td>';
+            res += '<td>' + inversion.semitones.join('-') + '</td>';
+            res += '<td colspan=13>…</td>'; // TODO
+            res += '</tr>';
+        }
+        res += '</tbody>';
+        res += '</table>';
+        return res;
+    }
+}());
+</script>
