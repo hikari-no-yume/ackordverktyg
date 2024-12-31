@@ -121,10 +121,8 @@ footer, footer > a {
 
         // Imagine every possible inversion
         var inversions = new Array(semitonesFromRoot.length);
-nextInversion:
         for (var i = 0; i < inversions.length; i++) {
             var inversion = new Array(semitonesFromRoot.length);
-nextNote:
             var posOffset = semitonesFromRoot[i];
             var negOffset = posOffset;
             while (negOffset > 0) {
