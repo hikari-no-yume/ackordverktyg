@@ -51,6 +51,16 @@ body {
 #results th:nth-child(2n + 8) { background: white; color: black; }
 #results th:nth-child(2n + 9) { background: black; color: white; }
 #results th:nth-child(15)     { background: white; color: black; }
+.interval {
+    border-radius: 3px;
+    color: white;
+    background: gray;
+}
+.truncated {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    background: darkred;
+}
 
 footer {
     margin: 36pt;
@@ -171,7 +181,22 @@ footer, footer > a {
                 }
             }
             res += '</td>';
-            res += '<td colspan=13>…</td>'; // TODO
+            // Visualise intervals
+            var prevSemitone = semitones[0];
+            for (var j = 1; j < semitones.length; j++) {
+                var semitone = semitones[j];
+                var fullSpan = semitone - prevSemitone;
+                var span = Math.min(semitone, 13) - prevSemitone;
+                prevSemitone = semitone;
+                res += '<td class="interval' + ((fullSpan !== span) ? ' truncated' : '') + '" colspan=' + span + '>' + fullSpan + '</td>';
+                if (semitone > 12) {
+                    break;
+                }
+            }
+            if (prevSemitone < 13) {
+                // Fill remaining space
+                res += '<td colspan=' + (13 - prevSemitone) + '></td>';
+            }
             res += '</tr>';
         }
         res += '</tbody>';
