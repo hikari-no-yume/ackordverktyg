@@ -101,6 +101,26 @@ footer, footer > a {
         });
     }
 
+    // Hue: a fairly arbitrary scheme that tries to distinguish major/minor,
+    //      and which should assign the same colours to inverted intervals.
+    var intervalHues = {
+        '0': 0,     // (unity should be desatured, hue is unimportant)
+        '1': 180,   // cyan for a single semitone because it's the weird one
+        '2': 60,    // yellow for major second because i just feel like it
+        '3': -120,  // blue for minor third / major sixth
+        '4': 0,     // red for major third / minor sixth
+        '5': -60,   // purple for perfect fifth (inverted) / perfect fourth
+        '6': 120,   // green for tritone???
+    };
+    var intervalColors = new Array(12);
+    for (var i = 0; i < intervalColors.length; i++) {
+        var hue = intervalHues[Math.min(12 - i, i)];
+        // Saturation: distance from an uninverted third or fifth
+        var saturation = (i === 0) ? 0 : ((1 + (3 - Math.min(3, Math.min(Math.abs(i-3), Math.abs(i-4), Math.abs(i-7))))) / 4);
+        var lightness = 0.75;
+        intervalColors[i] = 'hsl(' + hue + 'deg, ' + (saturation * 100) + '%, ' + (lightness * 100) + '%)';
+    }
+
     function update(integerNotation) {
         // Parse
         var semitonesFromRoot = [];
@@ -188,7 +208,8 @@ footer, footer > a {
                 var fullSpan = semitone - prevSemitone;
                 var span = Math.min(semitone, 13) - prevSemitone;
                 prevSemitone = semitone;
-                res += '<td class="interval' + ((fullSpan !== span) ? ' truncated' : '') + '" colspan=' + span + '>' + fullSpan + '</td>';
+                var color = intervalColors[fullSpan % 12];
+                res += '<td class="interval' + ((fullSpan !== span) ? ' truncated' : '') + '" colspan=' + span + ' style="background: ' + color + '">' + fullSpan + '</td>';
                 if (semitone > 12) {
                     break;
                 }
