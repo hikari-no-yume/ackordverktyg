@@ -206,6 +206,9 @@ footer, footer > a {
             for (var j = 1; j < semitones.length; j++) {
                 var semitone = semitones[j];
                 var fullSpan = semitone - prevSemitone;
+                if (fullSpan === 0) {
+                    continue;
+                }
                 var span = Math.min(semitone, 13) - prevSemitone;
                 prevSemitone = semitone;
                 var color = intervalColors[fullSpan % 12];
